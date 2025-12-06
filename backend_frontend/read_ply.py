@@ -1,22 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-General Information
-* Created by: 🦊 Florent Poux. 
-* Copyright: Florent Poux.
-* License: (c) learngeodata.eu
-* Status: Hidden Perk
-
-Dependencies:
-* Anaconda or Miniconda
-* An Anaconda new environment
-* Python 3.10 (Open3D Compatible)
-* Libraries as described
-
-Tested on Windows 11 and MacOS
-
-🎵 Note: Have fun with this Code Solution.
-"""
-
 import numpy as np
 import open3d as o3d
 import os

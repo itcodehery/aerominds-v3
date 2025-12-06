@@ -1,12 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DepthGen | 2D to 3D Converter</title>
+    <title>Aerominds | Spatial 3D Engine</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bg: '#050511', // Very dark blue/black
+                        sidebar: '#080816', // Slightly lighter
+                        primary: '#8b5cf6', // Violet
+                        secondary: '#a855f7', // Purple
+                        accent: '#6366f1', // Indigo
+                        glass: 'rgba(255, 255, 255, 0.03)',
+                        border: 'rgba(255, 255, 255, 0.05)',
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
-    <!-- Three.js from CDN -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400&display=swap"
+        rel="stylesheet">
+
+    <!-- Three.js Import Map -->
     <script type="importmap">
         {
             "imports": {
@@ -15,272 +42,194 @@
             }
         }
     </script>
+
     <style>
-        :root {
-            --primary: #6366f1;
-            --secondary: #a855f7;
-            --bg-dark: #0f172a;
-            --glass: rgba(255, 255, 255, 0.05);
-            --border: rgba(255, 255, 255, 0.1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border_box;
-        }
-
         body {
             font-family: 'Outfit', sans-serif;
-            background-color: var(--bg-dark);
+            background-color: #050511;
+            /* Matches tailwind config */
             color: #fff;
-            overflow-x: hidden;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
         }
 
-        .background-glow {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: 
-                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.15) 0%, transparent 40%);
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        header {
-            padding: 2rem;
-            text-align: center;
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border);
-        }
-
-        h1 {
-            font-weight: 600;
-            font-size: 2.5rem;
-            background: linear-gradient(to right, #fff, #94a3b8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 0.5rem;
-        }
-
-        .subtitle {
-            color: #94a3b8;
-            font-weight: 300;
-        }
-
-        main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2rem;
-            gap: 2rem;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 2rem;
-            height: 70vh;
-        }
-
-        .controls {
-            background: var(--glass);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            backdrop-filter: blur(20px);
-        }
-
-        .viewer {
-            background: #000;
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            overflow: hidden;
-            position: relative;
-            background-image: 
-                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
-        }
-
-        #canvas-container {
-            width: 100%;
-            height: 100%;
-        }
-
-        /* Input Styling */
-        .file-upload {
-            position: relative;
-            width: 100%;
-            height: 150px;
-            border: 2px dashed var(--border);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .file-upload:hover {
-            border-color: var(--primary);
-            background: rgba(99, 102, 241, 0.05);
-        }
-
-        .file-upload input {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
-        }
-
-        .icon {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-            color: var(--secondary);
-        }
-
-        /* Range Sliders */
-        .slider-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        label {
-            font-size: 0.9rem;
-            color: #cbd5e1;
-        }
-
-        input[type="range"] {
+        .custom-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 100%;
-            background: rgba(255,255,255,0.1);
-            height: 6px;
-            border-radius: 3px;
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 18px;
-            height: 18px;
-            background: var(--primary);
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #fff;
             border-radius: 50%;
             cursor: pointer;
-            transition: transform 0.2s;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
         }
 
-        input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
-        }
-
-        /* Button */
-        .btn {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border: none;
-            padding: 1rem;
-            border-radius: 12px;
-            color: white;
-            font-weight: 600;
+        .custom-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            border-radius: 50%;
             cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: auto;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
         }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        .grid-bg {
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
         }
 
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* Loading */
         .loader {
-            display: none;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid #fff;
+            border-radius: 50%;
             width: 20px;
             height: 20px;
-            border: 2px solid #fff;
-            border-bottom-color: transparent;
-            border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto;
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 800px) {
-            .container {
-                grid-template-columns: 1fr;
-                height: auto;
+            0% {
+                transform: rotate(0deg);
             }
-            .viewer {
-                height: 400px;
+
+            100% {
+                transform: rotate(360deg);
             }
         }
     </style>
 </head>
-<body>
-    <div class="background-glow"></div>
-    
-    <header>
-        <h1>DepthGen</h1>
-        <p class="subtitle">Convert 2D Images to 3D Point Clouds instantly</p>
-    </header>
 
-    <main>
-        <div class="container">
-            <div class="controls">
-                <div class="file-upload">
-                    <div class="icon">📁</div>
-                    <span id="file-label">Drop image or click to upload</span>
-                    <input type="file" id="imageInput" accept="image/*">
-                </div>
+<body class="h-screen w-screen flex overflow-hidden text-gray-300">
 
-                <div class="slider-group">
-                    <label>Depth Intensity</label>
-                    <input type="range" id="depthParams" min="10" max="200" value="50">
-                </div>
-                
-                <div class="slider-group">
-                    <label>Resolution (Performance)</label>
-                    <input type="range" id="resParams" min="10" max="100" value="50">
-                </div>
+    <!-- Sidebar -->
+    <aside class="w-[380px] flex flex-col bg-sidebar border-r border-border p-8 shrink-0 relative z-10">
+        <!-- Header -->
+        <div class="mb-10">
+            <h1
+                class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-purple-600 mb-1">
+                Aerominds</h1>
+            <div class="text-[0.65rem] tracking-[0.2em] font-medium text-gray-500 uppercase">Spatial 3D Engine</div>
+        </div>
 
-                <button class="btn" id="convertBtn">
-                    <span class="btn-text">Generate 3D Model</span>
-                    <div class="loader"></div>
-                </button>
+        <!-- Scrollable Content -->
+        <div class="flex-1 flex flex-col gap-8 overflow-y-auto pr-2 custom-scrollbar">
+
+            <!-- Input Source -->
+            <div>
+                <label class="block text-sm font-medium text-gray-400 mb-4">Input Source</label>
+                <div class="relative group">
+                    <input type="file" id="imageInput" accept="image/*"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" />
+                    <div id="dropZone"
+                        class="h-48 rounded-2xl border border-dashed border-gray-700 bg-[rgba(255,255,255,0.01)] group-hover:bg-[rgba(255,255,255,0.03)] group-hover:border-violet-500/50 transition-all duration-300 flex flex-col items-center justify-center p-4">
+                        <div class="w-12 h-12 mb-3 rounded-full bg-yellow-500/10 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-yellow-500" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z">
+                                </path>
+                            </svg>
+                        </div>
+                        <p id="file-label" class="text-sm text-gray-400 font-medium truncate max-w-full px-2">Select
+                            Image File</p>
+                        <p class="text-xs text-gray-600 mt-1">PNG, JPG supported</p>
+                    </div>
+                </div>
             </div>
 
-            <div class="viewer">
-                <div id="canvas-container"></div>
+            <!-- Controls -->
+            <div class="space-y-8">
+                <!-- Z-Axis Extrusion -->
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <label class="text-sm font-semibold text-white">Z-Axis Extrusion</label>
+                        <span
+                            class="text-xs px-2 py-1 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">Depth</span>
+                    </div>
+
+                    <div class="relative h-12 flex items-center">
+                        <span
+                            class="absolute left-0 text-[10px] uppercase tracking-wider text-gray-600 font-bold">Flat</span>
+                        <input type="range" id="depthParams" min="10" max="200" value="50"
+                            class="custom-slider w-full h-1 bg-gray-800 rounded-lg appearance-none mx-8 focus:outline-none">
+                        <span
+                            class="absolute right-0 text-[10px] uppercase tracking-wider text-gray-600 font-bold">Deep</span>
+                    </div>
+                </div>
+
+                <!-- Voxel Density -->
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <label class="text-sm font-semibold text-white">Voxel Density</label>
+                        <span
+                            class="text-xs px-2 py-1 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">Quality</span>
+                    </div>
+
+                    <div class="relative h-12 flex items-center">
+                        <span
+                            class="absolute left-0 text-[10px] uppercase tracking-wider text-gray-600 font-bold">Perf.</span>
+                        <input type="range" id="resParams" min="10" max="100" value="50"
+                            class="custom-slider w-full h-1 bg-gray-800 rounded-lg appearance-none mx-8 focus:outline-none">
+                        <span
+                            class="absolute right-0 text-[10px] uppercase tracking-wider text-gray-600 font-bold">Detail</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Action Button -->
+        <div class="pt-6 mt-auto">
+            <button id="convertBtn"
+                class="group relative w-full h-14 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-medium shadow-lg shadow-violet-900/20 hover:shadow-violet-900/40 hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center overflow-hidden">
+                <div
+                    class="absolute inset-0 bg-white/20 group-hover:translate-x-full transition-transform duration-700 ease-in-out -translate-x-full skew-x-12">
+                </div>
+                <span class="btn-text flex items-center gap-2">
+                    Generate 3D Model
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        class="w-4 h-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </span>
+                <div class="loader hidden"></div>
+            </button>
+            <div class="mt-4 text-center">
+                <p class="text-[10px] font-mono text-gray-700 tracking-wider">AEROMINDS RENDER ENGINE V1.0</p>
             </div>
         </div>
+    </aside>
+
+    <!-- Main Viewport -->
+    <main class="flex-1 relative bg-black grid-bg overflow-hidden flex flex-col">
+        <!-- Top Overlay -->
+        <div class="absolute top-0 left-0 w-full p-6 flex justify-between items-start z-10 pointer-events-none">
+            <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)] animate-pulse">
+                </div>
+                <span class="text-[10px] font-mono text-gray-400 tracking-widest uppercase">Viewport Ready</span>
+            </div>
+
+            <div class="flex gap-2">
+                <div
+                    class="bg-gray-900/80 backdrop-blur border border-gray-800 rounded px-3 py-1.5 flex items-center gap-2">
+                    <span class="text-[10px] font-mono text-gray-400">Left Click: Rotate</span>
+                </div>
+                <div
+                    class="bg-gray-900/80 backdrop-blur border border-gray-800 rounded px-3 py-1.5 flex items-center gap-2">
+                    <span class="text-[10px] font-mono text-gray-400">Right Click: Pan</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3D Canvas -->
+        <div id="canvas-container" class="w-full h-full cursor-move"></div>
+
     </main>
 
-    <!-- App Logic -->
+    <!-- Application Logic -->
     <script type="module">
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -291,29 +240,48 @@
         // Init Scene
         function init() {
             const container = document.getElementById('canvas-container');
-            
+
             scene = new THREE.Scene();
-            // scene.background = new THREE.Color(0x0f172a); // Match bg-dark if mapped
-            
-            camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-            camera.position.set(0, -100, 100);
+            // Transparent background to show grid
+
+            camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 2000);
+            camera.position.set(20, 50, 100);
             camera.lookAt(0, 0, 0);
 
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(container.clientWidth, container.clientHeight);
             renderer.setPixelRatio(window.devicePixelRatio);
+            // Tone mapping for better look
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.0;
             container.appendChild(renderer.domElement);
 
             controls = new OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.rotateSpeed = 0.5;
 
-            // Ambient light
-            const light = new THREE.AmbientLight(0xffffff, 1);
-            scene.add(light);
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
 
-            // Grid helper
-            const gridHelper = new THREE.GridHelper(200, 50, 0x444444, 0x222222);
-            gridHelper.rotation.x = Math.PI / 2;
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+            dirLight.position.set(50, 100, 50);
+            scene.add(dirLight);
+
+            // subtle glow point lights
+            const purpleLight = new THREE.PointLight(0xa855f7, 2, 100);
+            purpleLight.position.set(-20, 20, 20);
+            scene.add(purpleLight);
+
+            const blueLight = new THREE.PointLight(0x6366f1, 2, 100);
+            blueLight.position.set(20, -20, 20);
+            scene.add(blueLight);
+
+
+            // Base Grid
+            const gridHelper = new THREE.GridHelper(200, 40, 0x333333, 0x111111);
+            gridHelper.position.y = -20;
             scene.add(gridHelper);
 
             window.addEventListener('resize', onWindowResize, false);
@@ -322,6 +290,7 @@
 
         function onWindowResize() {
             const container = document.getElementById('canvas-container');
+            if (!container) return;
             camera.aspect = container.clientWidth / container.clientHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(container.clientWidth, container.clientHeight);
@@ -330,33 +299,53 @@
         function animate() {
             requestAnimationFrame(animate);
             controls.update();
+            // Subtle rotation if cloud exists
+            if (pointCloud) {
+                // pointCloud.rotation.y += 0.0005; 
+            }
             renderer.render(scene, camera);
         }
 
         init();
 
-        // UI Logic
+        // UI Interactions
         const imageInput = document.getElementById('imageInput');
         const convertBtn = document.getElementById('convertBtn');
         const fileLabel = document.getElementById('file-label');
+        const dropZone = document.getElementById('dropZone');
+
+        // Drag and Drop Effects
+        imageInput.addEventListener('dragenter', () => {
+            dropZone.classList.add('border-violet-500', 'bg-violet-500/10');
+        });
+        imageInput.addEventListener('dragleave', () => {
+            dropZone.classList.remove('border-violet-500', 'bg-violet-500/10');
+        });
+        imageInput.addEventListener('drop', () => {
+            dropZone.classList.remove('border-violet-500', 'bg-violet-500/10');
+        });
 
         imageInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
-                fileLabel.innerText = e.target.files[0].name;
+                const name = e.target.files[0].name;
+                fileLabel.innerText = name;
+                fileLabel.classList.add('text-white');
             }
         });
 
         convertBtn.addEventListener('click', async () => {
             const file = imageInput.files[0];
             if (!file) {
+                // Need a toast or alert here, simple alert for now
                 alert('Please select an image first');
                 return;
             }
 
-            // UI State = Loading
+            // Loading State
             convertBtn.disabled = true;
-            document.querySelector('.btn-text').style.display = 'none';
-            document.querySelector('.loader').style.display = 'block';
+            convertBtn.querySelector('.btn-text').classList.add('hidden');
+            convertBtn.querySelector('.loader').classList.remove('hidden');
+            convertBtn.classList.add('opacity-70', 'cursor-not-allowed');
 
             const formData = new FormData();
             formData.append('image', file);
@@ -368,9 +357,9 @@
                     method: 'POST',
                     body: formData
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
                     loadPLY(data.ply_url);
                 } else {
@@ -380,43 +369,44 @@
                 console.error(error);
                 alert('Failed to process image');
             } finally {
-                // UI State = Reset
+                // Reset State
                 convertBtn.disabled = false;
-                document.querySelector('.btn-text').style.display = 'block';
-                document.querySelector('.loader').style.display = 'none';
+                convertBtn.querySelector('.btn-text').classList.remove('hidden');
+                convertBtn.querySelector('.loader').classList.add('hidden');
+                convertBtn.classList.remove('opacity-70', 'cursor-not-allowed');
             }
         });
 
         function loadPLY(url) {
-            // Remove old point cloud
             if (pointCloud) scene.remove(pointCloud);
 
             const loader = new PLYLoader();
             loader.load(url, (geometry) => {
                 geometry.computeVertexNormals();
 
-                // Material for points
-                const material = new THREE.PointsMaterial({ 
-                    size: 1, 
-                    vertexColors: true 
-                });
-
-                pointCloud = new THREE.Points(geometry, material);
-                
-                // Center geometry
+                // Center Geometry
                 geometry.computeBoundingBox();
                 const center = new THREE.Vector3();
                 geometry.boundingBox.getCenter(center);
                 geometry.center();
 
+                const material = new THREE.PointsMaterial({
+                    size: 0.8, // Slightly smaller points for high res feel
+                    vertexColors: true,
+                    sizeAttenuation: true
+                });
+
+                pointCloud = new THREE.Points(geometry, material);
+                pointCloud.rotation.x = -Math.PI; // Correct orientation often needed for images
                 scene.add(pointCloud);
-                
-                // Auto rotate to view better
-                pointCloud.rotation.x =  - Math.PI; 
-                
+
+                // Animate camera to look at it
+                // Tweening would be nice, but jump for now
+                camera.position.set(0, 0, Math.max(geometry.boundingBox.max.x, geometry.boundingBox.max.y) * 2);
+                controls.target.set(0, 0, 0);
             });
         }
-
     </script>
 </body>
+
 </html>
